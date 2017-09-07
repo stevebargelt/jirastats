@@ -1,2 +1,2 @@
 #!/bin/sh
-python python/fetch.py ACEJira -v
+python python/fetch.py $JIRA_PROJECT_TITLE -v

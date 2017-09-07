@@ -1,15 +1,80 @@
-#Very much WIP 
- 
+#Very much WIP
 
-# Azure Instance
+## Get your custom field names
 
-# Docker Containers 
+In a browser:
+[https://<jiraurl>/rest/api/2/field](https://<jiraurl>/rest/api/2/field)
+then search for the fiel names note the number
+
+## Running In Docker Containers
+
+### Mongo DB
+
+docker run --name mongo -p 27017:27017 -v $PWD/data:/data/db -d mongo
+
+Set environment vars:
+
+```shell
+export JIRA_URL="http://your.jira.url"
+export JIRA_USER="USERNAME"
+export JIRA_PASSWORD="PASSWORD"
+export JIRA_CUSTOM_FIELDS=""
+export JIRA_PROJECT_TITLE="POSJira"
+export JIRA_PROJECTS="PCC, PSP, POSCR"
+```
+
+```shell
+docker build -t test-jira .
+```
+
+>or
+
+    ```shell
+    docker build -t test-jira -f Dockerfile.cron .
+    ```
+
+```shell
+docker run -d \
+-e JIRA_URL \
+-e JIRA_USER \
+-e JIRA_PASSWORD \
+-e JIRA_CUSTOM_FIELDS \
+-e JIRA_PROJECT_TITLE \
+-e JIRA_PROJECTS \
+-v $PWD/stats:/stats \
+--name test-jira --link mongo:mongo test-jira
+```
+
+Grab the Jira data:
+
+```shell
+docker exec test-jira /getJiraStats.sh
+```
+
+To get the python logs:
+
+```shell
+docker exec test-jira cat /var/log/py.log
+```
+
+To get the .csv files:
+
+```shell
+
+docker exec test-jira ls /tmp/
+docker cp test-jira:/tmp/
+
+```
+
+
+
+
 docker build -t test-jira .
 docker build -t jira-stats-r .
 
 docker run --name mongo -p 27017:27017 -v $PWD/data:/data/db -d mongo
 
-#DEPRICATED# 
+#DEPRICATED#
 docker run -d --name test-jira --link mongo:mongo -v $PWD/stats:/stats test-jira
 docker run -d --name test-jira --link mongo:mongo test-jira
 docker run -d --name test-stats-r -p 8787:8787 --link test-jira:test-jira --volumes-from test-jira jira-stats-r
@@ -23,7 +88,7 @@ docker exec test-jira Rscript -e 'install.packages(c("lubridate", "urltools", "R
 
 
 ## Look at fields on host:
-docker cp test-jira:/tmp/ACE*.* ~/Dropbox/<somecompany>/cron
+docker cp test-jira:/stats/POS*.* ~/Dropbox/<somecompany>/cron
 
 ## LOGS
 docker exec test-jira cat /var/log/cron.log

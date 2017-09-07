@@ -7,7 +7,7 @@ client = None
 def create_client():
     global client
     if not client:
-        client = MongoClient('172.17.0.2:27017')
+        client = MongoClient('mongodb://mongo:27017')
 
 def save_dataset(name, jql = None, issue_collection = None, jira_url = None, jira_user = None, jira_password = None, reset = False):
     dataset = client.jiraview.datasets.find_one({ 'name' : name} ) or {}

@@ -15,9 +15,9 @@ library(dplyr)
 
 #detach(package:plyr) # yeah. Well if plyr is loaded groupby behaves like crap
 
-jira <- read.csv("/stats/ACEJira-issues.csv")
-jiraTransitions <- read.csv("/stats/ACEJira-transitions.csv")
-#jiraTransitions <- read_delim("/stats/ACEJira-transitions.csv" , ",", quote = "\"", skip = 0 , col_names = TRUE , na = c("","NA"), n_max=-1 , locale=locale(encoding = "ASCII", decimal_mark = ".") , progress = FALSE) %>% exploratory::clean_data_frame()
+jira <- read.csv("/stats/POSJira-issues.csv")
+jiraTransitions <- read.csv("/stats/POSJira-transitions.csv")
+#jiraTransitions <- read_delim("/stats/POSJira-transitions.csv" , ",", quote = "\"", skip = 0 , col_names = TRUE , na = c("","NA"), n_max=-1 , locale=locale(encoding = "ASCII", decimal_mark = ".") , progress = FALSE) %>% exploratory::clean_data_frame()
 
 #clean up transitions
 #get rid of NA from_status - which is equal to removing "created"
@@ -64,7 +64,7 @@ jiraWithDaysInStatus <- jiraWithDaysInStatus %>%
                 filter(!is.na(resolutiondate)) %>%
                 filter(resolutiondate >= '2016-07-01')
 
-write.csv(jiraWithDaysInStatus, file = "/stats/ACEJira_Transformed.csv", na="")
+write.csv(jiraWithDaysInStatus, file = "/stats/POSJira_Transformed.csv", na="")
 
 # End of the real code
 

@@ -16,7 +16,7 @@ client = None
 def create_client():
     global client
     if not client:
-        client = MongoClient('172.17.0.2:27017')
+        client = MongoClient('mongodb://mongo:27017')
 
 as_is_fields = {
     'key': 'key',

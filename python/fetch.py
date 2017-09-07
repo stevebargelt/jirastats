@@ -13,7 +13,7 @@ client = None
 def create_client():
     global client
     if not client:
-        client = MongoClient('172.17.0.2:27017')
+        client = MongoClient('mongodb://mongo:27017')
 
 def log(verbose, s):
     if verbose:
@@ -36,6 +36,7 @@ def fetch_summaries(session, jql, jira_url, verbose = False):
         # if (user and password):
             # search_request = requests.get(search_url, params = search_params, auth = (user, password))
         # else:
+        session.verify = False
         search_request = session.get(search_url, params = search_params)
 
         log(verbose, 'Requesting %s.' % search_url)

@@ -1,7 +1,5 @@
-# BUILD-USING:        docker build -t test-cron .
+# BUILD-USING:        docker build -t test-cron Dockerfile.cron
 # RUN-USING docker run --detach=true --volumes-from t-logs --name t-cron test-cron
-
-#FROM ubuntu:latest
 FROM python:2.7
 
 RUN apt-get update
@@ -21,6 +19,5 @@ RUN chmod 0644 /etc/cron.d/cron-python
 # Create the log file to be able to run tail
 RUN touch /var/log/cron.log
 RUN touch /var/log/py.log
-VOLUME /stats
 
 CMD cron && tail -f /var/log/cron.log

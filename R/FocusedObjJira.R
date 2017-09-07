@@ -16,10 +16,10 @@ library(dplyr)
 
 
 # Data Analysis Steps
-#jira <- read_delim("/stats/ACEJira-transitions.csv" , ",", quote = "\"", skip = 0 , col_names = TRUE , na = c("","NA"), n_max=-1 , locale=locale(encoding = "ASCII", decimal_mark = ".") , progress = FALSE) %>%
+#jira <- read_delim("/stats/POSJira-transitions.csv" , ",", quote = "\"", skip = 0 , col_names = TRUE , na = c("","NA"), n_max=-1 , locale=locale(encoding = "ASCII", decimal_mark = ".") , progress = FALSE) %>%
 #exploratory::clean_data_frame() %>%
 
-jira <- read_csv("/stats/ACEJira-transitions.csv") %>% 
+jira <- read_csv("/stats/POSJira-transitions.csv") %>% 
   filter(transition != "Non-existent to Open") %>%
   filter(!is.na(from_status)) %>%
   mutate(status = str_replace_all(status, c("Closed" = "Done", "Resolved" = "Done", "Closed" = "Done"))) %>%
@@ -46,5 +46,5 @@ jira2 <- jira[keep]
 jira2 <- jira2 %>% mutate(StartDate = as.Date(StartDate)) %>%
   mutate(EndDate = as.Date(EndDate))
 
-write.csv(jira2, file = "/stats/ACEJira_FocusedObjData.csv", na="")
+write.csv(jira2, file = "/stats/POSJira_FocusedObjData.csv", na="")
 
