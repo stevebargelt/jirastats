@@ -6,7 +6,7 @@ docker run --name mongo -p 27017:27017 -v $PWD/data:/data/db -d mongo
 docker stop test-jira
 docker rm test-jira
 docker rmi test-jira
-docker build -t test-jira -f Dockerfile.cron .
+docker build -t test-jira .
 docker run -d \
 -e JIRA_URL \
 -e JIRA_USER \

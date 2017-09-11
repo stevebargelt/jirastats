@@ -1,13 +1,11 @@
-# BUILD-USING:        docker build -t jiraStatsR .
+# BUILD-USING:        docker build -t jira-stats-r .
 # RUN-USING docker run --detach=true --volumes-from t-logs --name t-cron test-cron
-
-#FROM ubuntu:latest
 FROM rocker/hadleyverse
 
 RUN apt-get update
 RUN apt-get install -y cron
 
-ADD cron-python /etc/cron.d/
+ADD cron-r /etc/cron.d/
 ADD *.R /
 ADD *.sh /
 
@@ -22,8 +20,6 @@ RUN chmod 0644 /etc/cron.d/cron-r
 
 # Create the log file to be able to run tail
 RUN touch /var/log/r-stats.log
-
-VOLUME /stats
 
 #CMD ["Rscript", "/dataManipulation.R"]
 CMD cron && tail -f /var/log/r-stats.log

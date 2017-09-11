@@ -27,12 +27,6 @@ export JIRA_PROJECTS="PCC, PSP, POSCR"
 docker build -t test-jira .
 ```
 
->or
-
-    ```shell
-    docker build -t test-jira -f Dockerfile.cron .
-    ```
-
 ```shell
 docker run -d \
 -e JIRA_URL \
@@ -57,20 +51,31 @@ To get the python logs:
 docker exec test-jira cat /var/log/py.log
 ```
 
-To get the .csv files:
+Build the r-stats container
+
+```shell
+docker build -t jira-stats-r .
+```
+
+Run the r stats container
 
 ```shell
 
-docker exec test-jira ls /tmp/
-docker cp test-jira:/tmp/
+docker run -d \
+-v $(pwd)/../stats:/stats \
+--name jira-stats-r jira-stats-r
 
 ```
 
+```shell
+
+docker exec jira-stats-r Rscript /FocusedObjJira.R
 
 
+```
 
-docker build -t test-jira .
-docker build -t jira-stats-r .
+### OLD STUFF
+
 
 docker run --name mongo -p 27017:27017 -v $PWD/data:/data/db -d mongo
 

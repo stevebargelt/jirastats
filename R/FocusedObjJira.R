@@ -1,6 +1,3 @@
-# Set libPaths.
-.libPaths("/Users/steve/.exploratory/R/3.3")
-
 # Load required packages.
 library(lubridate)
 library(tidyr)
@@ -8,43 +5,37 @@ library(stringr)
 library(readr)
 library(dplyr)
 
-#library(exploratory)
-#library(urltools)
-#library(broom)
-#library(RcppRoll)
-#library(tibble)
+# for our team data we have statuses of To Do, In Progress, Done, Accepted
+# we want to measure from the FIRST In Progress to the LAST Accepted
+#  (FIRST and LAST since an item can bounce)
 
+jiraTransitions <- read_csv("~/code/jirastats/stats/POSJira-transitions.csv") 
 
-# Data Analysis Steps
-#jira <- read_delim("/stats/POSJira-transitions.csv" , ",", quote = "\"", skip = 0 , col_names = TRUE , na = c("","NA"), n_max=-1 , locale=locale(encoding = "ASCII", decimal_mark = ".") , progress = FALSE) %>%
-#exploratory::clean_data_frame() %>%
+toDo <- c("Backlog" = "To Do", "Open" = "To Do")
+inProgress <- c("In Development" = "In Progress", "Code Review" = "In Progress")
+#blocked <- c("Waiting" = "Blocked")
+done <- c("Closed" = "Done", "Resolved" = "Done")
+afterDone <- c("Accepted" = "After Done")
 
-jira <- read_csv("/stats/POSJira-transitions.csv") %>% 
-  filter(transition != "Non-existent to Open") %>%
-  filter(!is.na(from_status)) %>%
-  mutate(status = str_replace_all(status, c("Closed" = "Done", "Resolved" = "Done", "Closed" = "Done"))) %>%
-  filter(status == "Done") %>%
-  filter(issue_type  %in% c("Story", "Bug", "IMAGE Bug", "Ticket")) %>%
-  mutate(issue_type = str_replace_all(issue_type, c("IMAGE Bug" = "Bug"))) %>%
-  mutate(issue_type = str_replace_all(issue_type, c("Ticket" = "Bug"))) %>%
-  mutate(transition = str_replace_all(transition, c("Backlog" = "To Do", "Selected for In Progress" = "To Do", "Sprint To Do" = "To Do" ))) %>%
-  mutate(transition = str_replace_all(transition, c("Development" = "In Progress", "QA Ready" = "In Progress", "Code Review" = "In Progress", "QA" = "In Progress", "INT \\(QA\\)" = "In Progress", "INT \\(In Progress\\)" = "In Progress"))) %>%
-  mutate(from_status = str_replace_all(from_status, c("Closed" = "Done", "Resolved" = "Done", "Closed" = "Done"))) %>%
-  filter(from_status %in% c("Blocked","In Progress","To Do")) %>%
-  mutate(transition = str_replace_all(transition, c("Closed" = "Done", "Resolved" = "Done", "Closed" = "Done"))) %>%
-  filter(transition == "To Do to In Progress") %>%
-  filter(!is.na(resolution)) %>%
-  mutate(EndDate = resolutiondate) %>%
-  mutate(StartDate = when)  
+jiraFocusedObjective <- 
+  jiraTransitions %>%
+  mutate(status = str_replace_all(status, afterDone)) %>%
+  filter(status == "After Done") %>%
+  filter(issue_type  %in% c("Story", "Defect")) %>%
+  mutate(to_status = str_replace_all(to_status, inProgress)) %>%
+  mutate(to_status = str_replace_all(to_status, toDo)) %>%
+  mutate(to_status = str_replace_all(to_status, done)) %>%
+  filter(to_status %in% c("Blocked","In Progress","To Do", "Done", "Accepted")) %>%  
+  group_by(key, to_status, issue_type) %>%
+  mutate(when = if_else(to_status %in% c("To Do", "In Progress", "Blocked"), min(when), max(when))) %>%
+  summarize(newWhen = max(when, na.rm = TRUE)) %>%
+  spread(to_status, newWhen) %>%
+  mutate(EndDate = `Done`) %>%
+  mutate(StartDate = `In Progress`)  
 
+keep <- c("EndDate", "StartDate", "issue_type", "key")
 
+jiraFocusedObjective <- jiraFocusedObjective[keep]
 
-keep <- c("EndDate", "StartDate", "issue_type", "project")
-jira2 <- jira[keep]
-
-#clean up the POSIX Dates... make them something intelligible (to Excel and Power BI)
-jira2 <- jira2 %>% mutate(StartDate = as.Date(StartDate)) %>%
-  mutate(EndDate = as.Date(EndDate))
-
-write.csv(jira2, file = "/stats/POSJira_FocusedObjData.csv", na="")
+write.csv(jiraFocusedObjective, file = "/stats/POSJira_FocusedObj_Data.csv", na="") # Docker
 

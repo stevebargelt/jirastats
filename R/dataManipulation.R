@@ -5,19 +5,8 @@ library(stringr)
 library(readr)
 library(dplyr)
 
-#library(exploratory)
-#library(urltools)
-#library(broom)
-#library(RcppRoll)
-#library(tibble)
-#.libPaths("/Users/steve/.exploratory/R/3.3")
-#library(exploratory)
-
-#detach(package:plyr) # yeah. Well if plyr is loaded groupby behaves like crap
-
 jira <- read.csv("/stats/POSJira-issues.csv")
 jiraTransitions <- read.csv("/stats/POSJira-transitions.csv")
-#jiraTransitions <- read_delim("/stats/POSJira-transitions.csv" , ",", quote = "\"", skip = 0 , col_names = TRUE , na = c("","NA"), n_max=-1 , locale=locale(encoding = "ASCII", decimal_mark = ".") , progress = FALSE) %>% exploratory::clean_data_frame()
 
 #clean up transitions
 #get rid of NA from_status - which is equal to removing "created"
@@ -26,18 +15,16 @@ jiraTransitions <- subset(jiraTransitions, !is.na(from_status))
 #add any transformations of status here. The goal is to have ONE "ToDo", ONE "In Progress", 
 #   ONE "Blocked", ONE "Done", and ONE "After Done" status
 #   these transitions allow us to level across projects that have different columns defined
-toDo <- c("Backlog" = "To Do", "Selected for In Progress" = "To Do", "Sprint To Do" = "To Do")
-inProgress <- c("Development" = "In Progress", "QA Ready" = "In Progress", "Code Review" = "In Progress", 
-                "INT \\(QA\\)" = "In Progress", "INT \\(In Progress\\)" = "In Progress")
+toDo <- c("Backlog" = "To Do")
+inProgress <- c("In Development" = "In Progress", "Code Review" = "In Progress")
 #blocked <- c("Waiting" = "Blocked")
 done <- c("Closed" = "Done", "Resolved" = "Done")
-#afterDone <- c("PO Accepted" = "After Done")
+afterDone <- c("Accepted" = "After Done")
 
 jiraStatusDays <- 
   jiraTransitions %>%
-  filter(!is.na(from_status)) %>%
   mutate(status = str_replace_all(status, done)) %>%
-  filter(status == "Done") %>%
+  filter(status == "Accepted") %>%
   filter(issue_type  %in% c("Story", "Bug", "IMAGE Bug", "Ticket")) %>%
   mutate(from_status = str_replace_all(from_status, inProgress)) %>%
   mutate(from_status = str_replace_all(from_status, toDo)) %>%

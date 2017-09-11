@@ -2,3 +2,4 @@
 *.crt
 /stats
 /data
+*.secret
