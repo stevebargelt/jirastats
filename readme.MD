@@ -102,5 +102,5 @@ Manually run the R scripts:
 
 ```shell
 docker exec jira-stats-r Rscript /FocusedObjJira.R
-docker exec test-stats-r Rscript /dataManipulation.R
+docker exec jira-stats-r Rscript /dataManipulation.R
 ```

@@ -9,7 +9,8 @@ library(dplyr)
 # we want to measure from the FIRST In Progress to the LAST Accepted
 #  (FIRST and LAST since an item can bounce)
 
-jiraTransitions <- read_csv("~/code/jirastats/stats/POSJira-transitions.csv") 
+#jiraTransitions <- read_csv("~/code/jiraStats/stats/POSJira-transitions.csv") # local
+jiraTransitions <- read_csv("/stats/POSJira-transitions.csv") # Docker
 
 toDo <- c("Backlog" = "To Do", "Open" = "To Do")
 inProgress <- c("In Development" = "In Progress", "Code Review" = "In Progress")
@@ -25,7 +26,7 @@ jiraFocusedObjective <-
   mutate(to_status = str_replace_all(to_status, inProgress)) %>%
   mutate(to_status = str_replace_all(to_status, toDo)) %>%
   mutate(to_status = str_replace_all(to_status, done)) %>%
-  filter(to_status %in% c("Blocked","In Progress","To Do", "Done", "Accepted")) %>%  
+  filter(to_status %in% c("Blocked","In Progress","To Do", "Done", "After Done")) %>%  
   group_by(key, to_status, issue_type) %>%
   mutate(when = if_else(to_status %in% c("To Do", "In Progress", "Blocked"), min(when), max(when))) %>%
   summarize(newWhen = max(when, na.rm = TRUE)) %>%
@@ -37,5 +38,6 @@ keep <- c("EndDate", "StartDate", "issue_type", "key")
 
 jiraFocusedObjective <- jiraFocusedObjective[keep]
 
+#write.csv(jiraFocusedObjective, file = "~/code/jiraStats/stats/POSJira_FocusedObj_Data.csv", na="") # local
 write.csv(jiraFocusedObjective, file = "/stats/POSJira_FocusedObj_Data.csv", na="") # Docker
 

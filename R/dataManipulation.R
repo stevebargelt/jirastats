@@ -5,6 +5,9 @@ library(stringr)
 library(readr)
 library(dplyr)
 
+#jira <- read.csv("~/code/jiraStats/stats/POSJira-issues.csv")
+#jiraTransitions <- read.csv("~/code/jiraStats/stats/POSJira-transitions.csv")
+
 jira <- read.csv("/stats/POSJira-issues.csv")
 jiraTransitions <- read.csv("/stats/POSJira-transitions.csv")
 
@@ -23,22 +26,19 @@ afterDone <- c("Accepted" = "After Done")
 
 jiraStatusDays <- 
   jiraTransitions %>%
-  mutate(status = str_replace_all(status, done)) %>%
-  filter(status == "Accepted") %>%
-  filter(issue_type  %in% c("Story", "Bug", "IMAGE Bug", "Ticket")) %>%
+  mutate(status = str_replace_all(status, afterDone)) %>%
+  filter(status == "After Done") %>%
+  filter(issue_type  %in% c("Story", "Defect")) %>%
   mutate(from_status = str_replace_all(from_status, inProgress)) %>%
   mutate(from_status = str_replace_all(from_status, toDo)) %>%
   mutate(from_status = str_replace_all(from_status, done)) %>%
-  filter(from_status %in% c("Blocked","In Progress","To Do")) %>%  
+  filter(from_status %in% c("In Progress","To Do", "Done", "After Done")) %>%  
   group_by(key, from_status) %>%
   summarize(daysInStatus = sum(days_in_from_status, na.rm = TRUE)) %>%
   spread(from_status, daysInStatus)  %>%
-  filter(!is.na(`To Do`)) %>%
-  mutate(`Blocked` = ifelse(is.na(`Blocked`),ifelse(!is.na(`In Progress`), 0, `Blocked`),`Blocked`)) %>%
-  mutate(`In Progress` = ifelse(is.na(`In Progress`),ifelse(!is.na(`Blocked`), 0, `In Progress`),`In Progress`)) %>%
   filter(!is.na(`In Progress`)) %>%
-  mutate(CycleTime = cumsum(`In Progress`) + cumsum(Blocked)) %>%
-  mutate(LeadTime = cumsum(`To Do`) + cumsum(`In Progress`) + cumsum(Blocked))
+  mutate(CycleTime = cumsum(`In Progress`)) %>%
+  mutate(LeadTime = cumsum(`To Do`) + cumsum(`In Progress`) + cumsum(`Done`)) 
 
 #clean up the POSIX Dates... make them something intelligible (to Excel and Power BI)
 jira <- jira %>% mutate(created = as.Date(created)) %>%
@@ -47,14 +47,10 @@ jira <- jira %>% mutate(created = as.Date(created)) %>%
 
 jiraWithDaysInStatus <- merge(jira, jiraStatusDays, by.x = "key", all.y = TRUE)
 
-jiraWithDaysInStatus <- jiraWithDaysInStatus %>% 
-                filter(!is.na(resolutiondate)) %>%
-                filter(resolutiondate >= '2016-07-01')
-
+#write.csv(jiraWithDaysInStatus, file = "~/code/jiraStats/stats/POSJira_Transformed.csv", na="")
 write.csv(jiraWithDaysInStatus, file = "/stats/POSJira_Transformed.csv", na="")
 
 # End of the real code
-
 
 # The following are just status checks to comapre with Excel and PowerBI 
 
